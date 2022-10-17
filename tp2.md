@@ -1,181 +1,180 @@
-Setup IP
-----------
+I. ARP
 
-🌞 Mettez en place une configuration réseau fonctionnelle entre les deux machines
+1. Echange ARP
+🌞Générer des requêtes ARP
 
-    netsh interface ipv4 set address name="Ethernet" static 10.10.10.213 255.255.252.0
-mon ip : 10.10.10.213/22
-
-son ip : 10.10.10.225/22
-
-adresse de réseau : 10.10.8.0 (first adress)
-
-adresse de broadcast : 10.10.11.255 (last adress)
+        PING 10.3.1.12 (10.3.1.12) 56(84) bytes of data.
+        64 bytes from 10.3.1.12: icmp_seq=1 ttl=64 time=0.441 ms
+        64 bytes from 10.3.1.12: icmp_seq=2 ttl=64 time=0.521 ms
+        64 bytes from 10.3.1.12: icmp_seq=3 ttl=64 time=0.646 ms
 
 
-🌞 Prouvez que la connexion est fonctionnelle entre les deux machines
+table arp de marcel12
 
-    PS C:\WINDOWS\system32> ping 10.10.10.225
+    ip n s
+    10.3.1.11 dev enp0s8 lladdr 08:00:27:e0:68:b9 STALE
 
-    Envoi d’une requête 'Ping'  10.10.10.225 avec 32 octets de données :
-    Réponse de 10.10.10.225 : octets=32 temps=2 ms TTL=128
-    Réponse de 10.10.10.225 : octets=32 temps=1 ms TTL=128
-    Réponse de 10.10.10.225 : octets=32 temps=1 ms TTL=128
-    Réponse de 10.10.10.225 : octets=32 temps=1 ms TTL=128
+table arp de john11
 
-🌞 Wireshark it
+    ip n s
+    10.3.1.12 dev enp0s8 lladdr 08:00:27:72:0e:3d STALE
 
 
-ping = type 8 (demande d'echo)
-pong = type 0 (reponse d'echo au type 8)
+john11 :
+    
+    ip a
+    enp0s8: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 08:00:27:e0:68:b9
 
-[ma capture de ping](./pingpong.pcapng)
+marcel12 :
 
-🌞 Check the ARP table
-
-    arp -a
-                |
-                |
-                V
-
-    Interface : 10.10.10.213 --- 0xa
-    Adresse Internet      Adresse physique      Type
-    10.10.10.225          08-8f-c3-36-61-47     dynamique
+    ip a
+    enp0s8: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 08:00:27:72:0e:3d
 
 
-```
-arp -a
-```
-La gateway de notre réseau :
-```
- Adresse Internet      Adresse physique      Type
-  10.33.19.254          00-c0-e7-e0-04-4e     dynamique
-```
+1. Analyse de trames
+🌞Analyse de trames
+
+utilisez la commande tcpdump pour réaliser une capture de trame
+videz vos tables ARP, sur les deux machines, puis effectuez un ping
+
+
+🦈 Capture réseau tp3_arp.pcapng qui contient un ARP request et un ARP reply
+
+Si vous ne savez pas comment récupérer votre fichier .pcapng sur votre hôte afin de l'ouvrir dans Wireshark, et me le livrer en rendu, demandez-moi.
+
+
+II. Routage
+Vous aurez besoin de 3 VMs pour cette partie. Réutilisez les deux VMs précédentes.
 
 
 
-
-🌞 **Manipuler la table ARP**
-```
-arp -d
-```
-```
- arp -a
-
-Interface : 10.33.19.192 --- 0xb
-  Adresse Internet      Adresse physique      Type
-  10.33.19.254          00-c0-e7-e0-04-4e     dynamique
-  224.0.0.22            01-00-5e-00-00-16     statique
-
-Interface : 10.10.10.225 --- 0xe
-  Adresse Internet      Adresse physique      Type
-  224.0.0.22            01-00-5e-00-00-16     statique
-  239.255.255.250       01-00-5e-7f-ff-fa     statique
-
-Interface : 192.168.56.1 --- 0x12
-  Adresse Internet      Adresse physique      Type
-  224.0.0.22            01-00-5e-00-00-16     statique
-  ```
-```
-ping 10.10.10.213
-
-Envoi d’une requête 'Ping'  10.10.10.213 avec 32 octets de données :
-Réponse de 10.10.10.213 : octets=32 temps=1 ms TTL=128
-Réponse de 10.10.10.213 : octets=32 temps=1 ms TTL=128
-Réponse de 10.10.10.213 : octets=32 temps=1 ms TTL=128
-Réponse de 10.10.10.213 : octets=32 temps=1 ms TTL=128
-
-Statistiques Ping pour 10.10.10.213:
-    Paquets : envoyés = 4, reçus = 4, perdus = 0 (perte 0%),
-Durée approximative des boucles en millisecondes :
-    Minimum = 1ms, Maximum = 1ms, Moyenne = 1ms
-PS C:\Windows\system32> arp -a
-
-Interface : 10.33.19.192 --- 0xb
-  Adresse Internet      Adresse physique      Type
-  10.33.19.254          00-c0-e7-e0-04-4e     dynamique
-  10.33.19.255          ff-ff-ff-ff-ff-ff     statique
-  224.0.0.22            01-00-5e-00-00-16     statique
-  239.192.152.143       01-00-5e-40-98-8f     statique
-  239.255.255.250       01-00-5e-7f-ff-fa     statique
-
-Interface : 10.10.10.225 --- 0xe
-  Adresse Internet      Adresse physique      Type
-  10.10.10.213          40-b0-34-f0-e5-0e     dynamique
-  10.10.11.255          ff-ff-ff-ff-ff-ff     statique
-  224.0.0.22            01-00-5e-00-00-16     statique
-  239.192.152.143       01-00-5e-40-98-8f     statique
-  239.255.255.250       01-00-5e-7f-ff-fa     statique
-
-Interface : 192.168.56.1 --- 0x12
-  Adresse Internet      Adresse physique      Type
-  192.168.56.255        ff-ff-ff-ff-ff-ff     statique
-  224.0.0.22            01-00-5e-00-00-16     statique
-  239.192.152.143       01-00-5e-40-98-8f     statique
-  239.255.255.250       01-00-5e-7f-ff-fa     statique
-  ```
+Machine
+10.3.1.0/24
+10.3.2.0/24
 
 
-🌞 **Wireshark it**
 
-🦈 **PCAP qui contient les trames ARP**
 
-[ma capture des trames arp](./trames_arp.pcapng)
+router
+10.3.1.254
+10.3.2.254
 
-# II.5 Interlude hackerzz
 
-**Chose promise chose due, on va voir les bases de l'usurpation d'identité en réseau : on va parler d'*ARP poisoning*.**
+john
+10.3.1.11
+no
 
-> On peut aussi trouver *ARP cache poisoning* ou encore *ARP spoofing*, ça désigne la même chose.
 
-Le principe est simple : on va "empoisonner" la table ARP de quelqu'un d'autre.  
-Plus concrètement, on va essayer d'introduire des fausses informations dans la table ARP de quelqu'un d'autre.
+marcel
+no
+10.3.2.12
 
-Entre introduire des fausses infos et usurper l'identité de quelqu'un il n'y a qu'un pas hihi.
 
----
 
-➜ **Le principe de l'attaque**
 
-- on admet Alice, Bob et Eve, tous dans un LAN, chacun leur PC
-- leur configuration IP est ok, tout va bien dans le meilleur des mondes
-- **Eve 'lé pa jonti** *(ou juste un agent de la CIA)* : elle aimerait s'immiscer dans les conversations de Alice et Bob
-  - pour ce faire, Eve va empoisonner la table ARP de Bob, pour se faire passer pour Alice
-  - elle va aussi empoisonner la table ARP d'Alice, pour se faire passer pour Bob
-  - ainsi, tous les messages que s'envoient Alice et Bob seront en réalité envoyés à Eve
+Je les appelés marcel et john PASKON EN A MAR des noms nuls en réseau 🌻
 
-➜ **La place de ARP dans tout ça**
 
-- ARP est un principe de question -> réponse (broadcast -> *reply*)
-- IL SE TROUVE qu'on peut envoyer des *reply* à quelqu'un qui n'a rien demandé :)
-- il faut donc simplement envoyer :
-  - une trame ARP reply à Alice qui dit "l'IP de Bob se trouve à la MAC de Eve" (IP B -> MAC E)
-  - une trame ARP reply à Bob qui dit "l'IP de Alice se trouve à la MAC de Eve" (IP A -> MAC E)
-- ha ouais, et pour être sûr que ça reste en place, il faut SPAM sa mum, genre 1 reply chacun toutes les secondes ou truc du genre
-  - bah ui ! Sinon on risque que la table ARP d'Alice ou Bob se vide naturellement, et que l'échange ARP normal survienne
-  - aussi, c'est un truc possible, mais pas normal dans cette utilisation là, donc des fois bon, ça chie, DONC ON SPAM
+   john                router              marcel
+  ┌─────┐             ┌─────┐             ┌─────┐
+  │     │    ┌───┐    │     │    ┌───┐    │     │
+  │     ├────┤ho1├────┤     ├────┤ho2├────┤     │
+  └─────┘    └───┘    └─────┘    └───┘    └─────┘
 
-![Am I ?](./pics/arp_snif.jpg)
 
----
 
-➜ J'peux vous aider à le mettre en place, mais **vous le faites uniquement dans un cadre privé, chez vous, ou avec des VMs**
+1. Mise en place du routage
+🌞Activer le routage sur le noeud router
 
-➜ **Je vous conseille 3 machines Linux**, Alice Bob et Eve. La commande `[arping](https://sandilands.info/sgordon/arp-spoofing-on-wired-lan)` pourra vous carry : elle permet d'envoyer manuellement des trames ARP avec le contenu de votre choix.
+Cette étape est nécessaire car Rocky Linux c'est pas un OS dédié au routage par défaut. Ce n'est bien évidemment une opération qui n'est pas nécessaire sur un équipement routeur dédié comme du matériel Cisco.
 
-GLHF.
+🌞Ajouter les routes statiques nécessaires pour que john et marcel puissent se ping
 
-# III. DHCP you too my brooo
+il faut taper une commande ip route add pour cela, voir mémo
+il faut ajouter une seule route des deux côtés
+une fois les routes en place, vérifiez avec un ping que les deux machines peuvent se joindre
 
-🌞 **Wireshark it**
 
-🦈 **PCAP qui contient l'échange DORA**
-```
- netsh interface ipv4 set address name="Wi-Fi" static 81.10.10.225 255.255.0.0
- ```
-```
- netsh interface ipv4 set address name="Wi-Fi" dhcp 
- ```
-[ma capture de l'échange DORA](./echange_dora.pcapng)
 
+2. Analyse de trames
+🌞Analyse des échanges ARP
+
+videz les tables ARP des trois noeuds
+effectuez un ping de john vers marcel
+
+regardez les tables ARP des trois noeuds
+essayez de déduire un peu les échanges ARP qui ont eu lieu
+répétez l'opération précédente (vider les tables, puis ping), en lançant tcpdump sur marcel
+
+
+écrivez, dans l'ordre, les échanges ARP qui ont eu lieu, puis le ping et le pong, je veux TOUTES les trames utiles pour l'échange
+
+Par exemple (copiez-collez ce tableau ce sera le plus simple) :
+
+
+
+ordre
+type trame
+IP source
+MAC source
+IP destination
+MAC destination
+
+
+
+
+1
+Requête ARP
+x
+
+marcel AA:BB:CC:DD:EE
+
+x
+Broadcast FF:FF:FF:FF:FF
+
+
+
+2
+Réponse ARP
+x
+?
+x
+
+marcel AA:BB:CC:DD:EE
+
+
+
+...
+...
+...
+...
+
+
+
+
+?
+Ping
+?
+?
+?
+?
+
+
+?
+Pong
+?
+?
+?
+?
+
+
+
+
+Vous pourriez, par curiosité, lancer la capture sur john aussi, pour voir l'échange qu'il a effectué de son côté.
+
+🦈 Capture réseau tp3_routage_marcel.pcapng
+
+3. Accès internet
     
